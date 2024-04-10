@@ -1,91 +1,107 @@
-import pygame, sys
-import numpy as np
+import pygame,sys
+from Bird import *
+from Pipe import *
+from Floor import *
+class Game:
+    def __init__(self):
+        pygame.mixer.pre_init(frequency=44100, size=-16, channels=2, buffer=512)
+        pygame.init()
+        self.screen = pygame.display.set_mode((432, 768))
+        pygame.display.set_caption("Flappy Bird")
+        self.clock = pygame.time.Clock()
+        self.game_font = pygame.font.Font('04B_19.ttf', 35)
+        self.bg = pygame.transform.scale2x(pygame.image.load('assets/background-night.png').convert())
+        self.bird = Bird(self.screen)
+        self.pipe = Pipe(self.screen)
+        self.floor = Floor(self.screen)
+        self.game_over_surface = pygame.transform.scale2x(pygame.image.load('assets/message.png').convert_alpha())
+        self.game_over_rect = self.game_over_surface.get_rect(center=(216, 384))
+        self.flap_sound = pygame.mixer.Sound('sound/sfx_wing.wav')
+        self.hit_sound = pygame.mixer.Sound('sound/sfx_hit.wav')
+        self.score_sound = pygame.mixer.Sound('sound/sfx_point.wav')
+        self.score_sound_countdown = 100
+        self.game_active = True
+        self.score = 0
+        self.high_score = 0
 
-pygame.init()
-screen = pygame.display.set_mode((432,768))
-speed =pygame.time.Clock()# Setup fps
-#Background insert
-background = pygame.image.load('assets/background-night.png')
-background = pygame.transform.scale2x(background)
-#Floor insert
-floor = pygame.image.load('assets/floor.png')
-floor = pygame.transform.scale2x(floor)
-#Flappy bird insert
-bird = pygame.image.load('assets/yellowbird-midflap.png')
-bird = pygame.transform.scale2x(bird)
-bird_box_cover = bird.get_rect(center = (100,384))
+    def score_display(self):
+        score_surface = self.game_font.render(f'Score: {int(self.score)}', True, (255, 255, 255))
+        score_rect = score_surface.get_rect(center=(216, 100))
+        self.screen.blit(score_surface, score_rect)
 
-#Movemet    
-gravity = 1
-bird_movement = 0
-#pipe insert
-pipe_layout = pygame.image.load('assets/pipe-green.png')
-pipe_layout = pygame.transform.scale2x(pipe_layout)
-pipe_list = []
-pipe_height = [400,550,500,300,290]
-# spawn_timing
-spawn = pygame.USEREVENT
-pygame.time.set_timer(spawn,1200)
-# FUNCTION
-##Create_pipe
-def create_pipe():
-    random_pipe_pos = np.random.choice(pipe_height)
-    bottom_pipe = pipe_layout.get_rect(midtop =(400,random_pipe_pos))
-    top_pipe = pipe_layout.get_rect(midtop =(400,random_pipe_pos-700))
-    return bottom_pipe, top_pipe
-## Move pipe
-def move_pipe(pipes):
-    for pipe in pipes:
-        pipe.centerx -= 5
-    return pipes
-## Draw pipe
-def draw_pipe(pipes):
-    for pipe in pipes:
-        if pipe.bottom >= 768 :
-            screen.blit(pipe_layout,pipe)
-        else:
-            flip_pipe = pygame. transform. flip(pipe_layout,False, True)
-            screen.blit(flip_pipe,pipe)
-# Create one more floors
-def fake_floor() :
-    screen.blit(floor,(floor_left_moving,600))
-    screen.blit(floor,(floor_left_moving+432,600))
-def collisions(pipes):
-    for pipe in pipes:
-        if bird_box_cover.colliderect(pipe):
-            return True 
-    if bird_box_cover.top <= -75 or bird_box_cover.bottom >= 650:
-            return True
-    return False
-running = True
-floor_left_moving = 0 
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-            pygame.quit()
-            sys.exit()
+        high_score_surface = self.game_font.render(f'High Score: {int(self.high_score)}', True, (255, 255, 255))
+        high_score_rect = high_score_surface.get_rect(center=(216, 630))
+        self.screen.blit(high_score_surface, high_score_rect)
+
+    def update_high_score(self):
+        if self.score > self.high_score:
+            self.high_score = self.score
+
+    def play_collision_sound(self):
+        self.hit_sound.play()
+
+    def check_collision(self):
+        # Kiểm tra va chạm giữa chim và ống nước
+        for pipe in self.pipe.pipe_list:
+            if self.bird.bird_rect.colliderect(pipe):
+                return True
+        return False
+
+    def run_game(self):
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE and self.game_active:
+                        self.bird.bird_movement = 0
+                        self.bird.bird_movement = -11
+                        self.flap_sound.play()
+                    if event.key == pygame.K_SPACE and not self.game_active:
+                        self.game_active = True
+                        self.pipe.pipe_list.clear()
+                        self.bird.bird_rect.center = (100, 384)
+                        self.bird.bird_movement = 0
+                        self.score = 0
+                if event.type == self.pipe.spawnpipe_event:
+                    self.pipe.pipe_list.extend(self.pipe.create_pipe())
+
+            self.screen.blit(self.bg, (0, 0))
+
+            if self.game_active:
+                self.bird.update_movement()
+                self.bird.bird_animation()
+                self.bird.draw()
+                self.game_active = not self.check_collision()  # Kiểm tra va chạm
+                self.pipe.move_pipe()
+                self.pipe.draw()
+                self.score += 0.01
+                self.score_display()
+                self.score_sound_countdown -= 1
+                if self.score_sound_countdown <= 0:
+                    self.score_sound.play()
+                    self.score_sound_countdown = 100
+                if not self.game_active:
+                    self.play_collision_sound()  # Phát âm thanh khi có va chạm
+                    pygame.time.delay(1000)  # Dừng trò chơi trong 1 giây để người chơi có thể nhìn thấy màn hình game over
         
-        if event.type == pygame.KEYDOWN:
-           if event.key == pygame.K_SPACE :
-                bird_movement = 0
-                bird_movement -= 11  
-        if event.type == spawn:
-            pipe_list.extend(create_pipe())
-    screen.blit(background,(0,0))
-    #bird details
-    bird_movement += gravity
-    bird_box_cover.centery += bird_movement
-    screen.blit(bird,bird_box_cover)
-    if collisions(pipe_list):
-        running = False
-    #floor details
-    floor_left_moving -= 1 #Left moving constantly
-    fake_floor()
-    if floor_left_moving <= -432: #khi chạy hết 2 sàn thì đổi chổ lân phiên để chạy tiếp
-        floor_left_moving = 0
-    #pipe details
-    pipe_list = move_pipe(pipe_list)
-    draw_pipe(pipe_list)
-    pygame.display.update() 
-    speed.tick(50) #120 fps
+            else:
+                self.screen.blit(self.game_over_surface, self.game_over_rect)
+                self.update_high_score()
+                self.score_display()
+        
+            self.floor.draw()
+            self.floor.update_position()
+
+            pygame.display.update()
+            self.clock.tick(75)
+        def check_collision(self, bird_rect, pipe_list):
+            for pipe in pipe_list:
+                if bird_rect.colliderect(pipe):
+                    self.bird.play_hit_sound()
+                    self.pipe.play_hit_sound()
+                    return True
+            if bird_rect.top <= -75 or bird_rect.bottom >= 650:
+                return True
+            return False
