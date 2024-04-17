@@ -1,7 +1,9 @@
-import pygame,sys
-from Bird import *
-from Pipe import *
-from Floor import *
+import pygame
+import sys
+from Bird import Bird
+from Pipe import Pipe
+from Floor import Floor
+
 class Game:
     def __init__(self):
         pygame.mixer.pre_init(frequency=44100, size=-16, channels=2, buffer=512)
@@ -23,6 +25,11 @@ class Game:
         self.game_active = True
         self.score = 0
         self.high_score = 0
+        self.back_button_image = pygame.transform.scale2x(pygame.image.load('assets/backbutton.png').convert_alpha())
+        self.back_button_rect = self.back_button_image.get_rect(topleft=(10, 40))
+
+    def play_collision_sound(self):
+        self.hit_sound.play()
 
     def score_display(self):
         score_surface = self.game_font.render(f'Score: {int(self.score)}', True, (255, 255, 255))
@@ -36,15 +43,13 @@ class Game:
     def update_high_score(self):
         if self.score > self.high_score:
             self.high_score = self.score
-
-    def play_collision_sound(self):
-        self.hit_sound.play()
-
+            
     def check_collision(self):
-        # Kiểm tra va chạm giữa chim và ống nước
         for pipe in self.pipe.pipe_list:
             if self.bird.bird_rect.colliderect(pipe):
                 return True
+        if self.bird.bird_rect.top <= -75 or self.bird.bird_rect.bottom >= 650:
+            return True
         return False
 
     def run_game(self):
@@ -53,6 +58,13 @@ class Game:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.back_button_rect.collidepoint(event.pos):
+                        self.game_active = True
+                        self.pipe.pipe_list.clear()
+                        self.bird.bird_rect.center = (100, 384)
+                        self.bird.bird_movement = 0
+                        self.score = 0
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE and self.game_active:
                         self.bird.bird_movement = 0
@@ -73,7 +85,7 @@ class Game:
                 self.bird.update_movement()
                 self.bird.bird_animation()
                 self.bird.draw()
-                self.game_active = not self.check_collision()  # Kiểm tra va chạm
+                self.game_active = not self.check_collision()
                 self.pipe.move_pipe()
                 self.pipe.draw()
                 self.score += 0.01
@@ -83,25 +95,18 @@ class Game:
                     self.score_sound.play()
                     self.score_sound_countdown = 100
                 if not self.game_active:
-                    self.play_collision_sound()  # Phát âm thanh khi có va chạm
-                    pygame.time.delay(1000)  # Dừng trò chơi trong 1 giây để người chơi có thể nhìn thấy màn hình game over
-        
+                    self.play_collision_sound()
+                    pygame.time.delay(1000)
+
             else:
                 self.screen.blit(self.game_over_surface, self.game_over_rect)
                 self.update_high_score()
                 self.score_display()
-        
+
             self.floor.draw()
             self.floor.update_position()
 
+            self.screen.blit(self.back_button_image, self.back_button_rect)
+
             pygame.display.update()
             self.clock.tick(75)
-        def check_collision(self, bird_rect, pipe_list):
-            for pipe in pipe_list:
-                if bird_rect.colliderect(pipe):
-                    self.bird.play_hit_sound()
-                    self.pipe.play_hit_sound()
-                    return True
-            if bird_rect.top <= -75 or bird_rect.bottom >= 650:
-                return True
-            return False
