@@ -3,7 +3,7 @@ import pygame
 class Bird:
     def __init__(self, screen):
         self.screen = screen
-        self.gravity = 0.5
+        self.gravity = 0.7
         self.bird_movement = 0
         self.bird_skins = [
             pygame.transform.scale2x(pygame.image.load("assets/yellowbird-downflap.png").convert_alpha()),
@@ -41,3 +41,6 @@ class Bird:
         if 0 <= new_skin_index < len(self.bird_skins):
             self.current_skin_index = new_skin_index
             self.bird = self.bird_skins[self.current_skin_index]
+            # Giữ vị trí chim sau khi thay đổi skin
+            center = self.bird_rect.center
+            self.bird_rect = self.bird.get_rect(center=center)
