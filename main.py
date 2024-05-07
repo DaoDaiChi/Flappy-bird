@@ -12,33 +12,48 @@ def main():
     screen = pygame.display.set_mode((432, 768))
     pygame.display.set_caption("Flappy Bird")
 
-    menu = Menu(screen)  # Giả định bạn có lớp Menu
-    game = None
-    selected_skin_index = 0  # Chỉ số skin được chọn mặc định
+    # Khởi tạo menu
+    menu = Menu(screen)
+    selected_skin_index = 0  # Chỉ số da chim mặc định
+    
+    # Khởi tạo biến game trước khi vòng lặp bắt đầu
+    game = None  # Đảm bảo biến được khởi tạo
+     # Giao diện khởi động
+    start_screen = StartScreen(screen)
+    start_screen.run()  # Chạy giao diện khởi động
 
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                sys.exit()  # Thoát chương trình nếu người dùng muốn đóng cửa sổ
+                sys.exit()
 
-        choice = menu.run()  # Giả định phương thức run() của Menu trả về một lựa chọn
+        choice = menu.run()  # Lấy lựa chọn từ menu
 
-        if choice == "start":  # Nếu người dùng chọn bắt đầu trò chơi
-            if game is None:
-                game = Game(screen)  # Tạo một đối tượng Game mới nếu chưa có
-            game.bird.change_skin(selected_skin_index)  # Đảm bảo skin đã chọn được áp dụng trước khi chạy trò chơi
+        if isinstance(choice, str) and choice.startswith("level"):
+            level_number = int(choice[-1])  # Lấy số cấp độ từ chuỗi
+            game = Game(screen, level_number)  # Khởi tạo game với cấp độ hiện tại
+            game.bird.change_skin(selected_skin_index)  # Đổi da chim
             game.reset_game()  # Đặt lại trò chơi
-            game.run_game()  # Chạy trò chơi
+            game.set_auto_play(False)  # Đảm bảo chế độ tự động chơi đã tắt
+            game.run_game()  # Bắt đầu trò chơi
 
-        elif isinstance(choice, tuple) and choice[0] == "skins":  # Nếu người dùng chọn thay đổi skin
-            selected_skin_index = choice[1]  # Lấy chỉ số của skin được chọn
+        elif choice == "autoplay":
+            if game is None:
+                game = Game(screen, 1)  # Khởi tạo với cấp độ mặc định
+            game.bird.change_skin(selected_skin_index)
+            game.reset_game()
+            game.set_auto_play(True)  # Bật chế độ tự động chơi
+            game.run_game()  # Bắt đầu trò chơi trong chế độ tự động chơi
+
+        elif isinstance(choice, tuple) and choice[0] == "skins":
+            selected_skin_index = choice[1]
             if game:
-                game.bird.change_skin(selected_skin_index)  # Áp dụng skin mới cho chim nếu trò chơi đã được tạo
+                game.bird.change_skin(selected_skin_index)  # Đổi da chim nếu cần
 
-        elif choice == "quit":  # Nếu người dùng chọn thoát
+        elif choice == "exit":
             pygame.quit()
-            sys.exit()  # Thoát chương trình nếu người dùng muốn dừng hẳn
+            sys.exit()
 
 if __name__ == "__main__":
     main()

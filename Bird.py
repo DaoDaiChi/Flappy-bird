@@ -1,9 +1,9 @@
 import pygame
 
 class Bird:
-    def __init__(self, screen):
+    def __init__(self, screen, initial_skin_index=0,gravity=0.7):
         self.screen = screen
-        self.gravity = 0.7
+        self.gravity = gravity
         self.bird_movement = 0
         self.bird_skins = [
             pygame.transform.scale2x(pygame.image.load("assets/yellowbird-downflap.png").convert_alpha()),
@@ -11,16 +11,19 @@ class Bird:
             pygame.transform.scale2x(pygame.image.load("assets/redbird_downflap.png").convert_alpha()),
             pygame.transform.scale2x(pygame.image.load("assets/greenbird_downflap.png").convert_alpha())
         ]
-        self.current_skin_index = 0
+        self.current_skin_index = initial_skin_index  # Store the initial skin index
         self.bird = self.bird_skins[self.current_skin_index]
         self.bird_rect = self.bird.get_rect(center=(100, 384))
         self.birdflap_event = pygame.USEREVENT + 1
         pygame.time.set_timer(self.birdflap_event, 200)
-        self.hit_sound = pygame.mixer.Sound('sound/sfx_hit.wav')
+        self.hit_sound = pygame.mixer.Sound("sound/sfx_hit.wav")
+
+        # Debug output to confirm initialization
+        print("Bird initialized with skin index:", self.current_skin_index)
 
     def play_hit_sound(self):
         self.hit_sound.play()
-        
+
     def rotate_bird(self):
         new_bird = pygame.transform.rotozoom(self.bird, -self.bird_movement * 3, 1)
         return new_bird
@@ -38,9 +41,16 @@ class Bird:
         self.screen.blit(rotated_bird, self.bird_rect)
 
     def change_skin(self, new_skin_index):
+        print("Changing skin to index:", new_skin_index)  # Debug output to check incoming index
         if 0 <= new_skin_index < len(self.bird_skins):
             self.current_skin_index = new_skin_index
             self.bird = self.bird_skins[self.current_skin_index]
-            # Giữ vị trí chim sau khi thay đổi skin
+
+            # Debug output to confirm change
+            print("Skin changed to index:", self.current_skin_index)  
+            
+            # Keep the bird's position after changing the skin
             center = self.bird_rect.center
             self.bird_rect = self.bird.get_rect(center=center)
+        else:
+            raise ValueError("Invalid skin index")

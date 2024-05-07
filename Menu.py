@@ -9,8 +9,13 @@ class Menu:
         self.FONT = pygame.font.SysFont(None, 36)
         self.clock = pygame.time.Clock()
         self.options = [
-            {"text": "Start Game", "action": "start"},
+            {"text": "Level 1", "action": "level1"},
+            {"text": "Level 2", "action": "level2"},
+            {"text": "Level 3", "action": "level3"},
+            {"text": "Level 4", "action": "level4"},
+            {"text": "Level 5", "action": "level5"},
             {"text": "Bird Skins", "action": "skins"},
+            {"text": "Auto-Play", "action": "autoplay"},
             {"text": "Exit", "action": "exit"}
         ]
         option_height = (screen.get_height() - len(self.options) * 50) / 2
@@ -21,35 +26,7 @@ class Menu:
         text_rect = text_surface.get_rect(topleft=(x, y))
         self.screen.blit(text_surface, text_rect)
 
-    def run(self):
-        running = True
-        while running:
-            self.screen.blit(self.BG, (0, 0))  # Draw the background
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    x, y = pygame.mouse.get_pos()
-                    for option_rect, option in zip(self.option_rects, self.options):
-                        if option_rect.collidepoint(x, y):
-                            if option["action"] == "start":
-                                return "start"
-                            elif option["action"] == "skins":
-                                selected_skin_index = self.choose_bird_skin(self.WHITE)  # Pass WHITE as argument
-                                if selected_skin_index is not None:
-                                    return "skins", selected_skin_index
-                            elif option["action"] == "exit":
-                                pygame.quit()
-                                sys.exit()
-
-            for option_rect, option in zip(self.option_rects, self.options):
-                self.draw_text(option["text"], self.FONT, self.WHITE, option_rect.x, option_rect.y)
-
-            pygame.display.flip()
-            self.clock.tick(60)
-
-    def choose_bird_skin(self, BLACK):
+    def choose_bird_skin(self, BLACK = (0,0,0)):
         selected_skin_index = 0  # Default selected skin index
         skins = [
             pygame.transform.scale2x(pygame.image.load("assets/yellowbird-downflap.png").convert_alpha()),
@@ -113,3 +90,60 @@ class Menu:
                     # Check if OK button is clicked
                     if ok_button_rect.collidepoint(mouse_pos):
                         return selected_skin_index  # Return the selected skin index when OK is clicked
+    def run(self):
+        while True:
+            self.screen.blit(self.BG, (0, 0))
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    x, y = pygame.mouse.get_pos()
+                    for option_rect, option in zip(self.option_rects, self.options):
+                        if option_rect.collidepoint(x, y):
+                            # Check which option is clicked and return the appropriate action
+                            if "level" in option["action"]:
+                                # If it is a level option, return the level number
+                                return option["action"]  # E.g., "level1"
+                            elif option["action"] == "autoplay":
+                                return "autoplay"
+                            elif option["action"] == "skins":
+                                selected_skin_index = self.choose_bird_skin()
+                                if selected_skin_index is not None:
+                                    return "skins", selected_skin_index
+                            elif option["action"] == "exit":
+                                pygame.quit()
+                                sys.exit()
+
+            # Draw the option text
+            for option_rect, option in zip(self.option_rects, self.options):
+                self.draw_text(option["text"], self.FONT, self.WHITE, option_rect.x, option_rect.y)
+
+            pygame.display.flip()
+            self.clock.tick(60)
+class StartScreen:
+    def __init__(self, screen):
+        self.screen = screen
+        self.bg = pygame.transform.scale2x(pygame.image.load("assets/background-night.png").convert())
+        # Nút "Start Game"
+        self.start_button_image = pygame.transform.scale2x(pygame.image.load("assets/start_game_button.png").convert_alpha())
+        self.start_button_rect = self.start_button_image.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2))
+        self.clock = pygame.time.Clock()  # Dùng để kiểm soát tốc độ khung hình
+        
+    def run(self):
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.start_button_rect.collidepoint(event.pos):
+                        return  # Thoát khỏi vòng lặp để chuyển đến menu
+            
+            # Hiển thị giao diện khởi động và nút "Start Game"
+            self.screen.blit(self.bg, (0, 0))  # Vẽ nền
+            self.screen.blit(self.start_button_image, self.start_button_rect)  # Vẽ nút "Start Game"
+            
+            pygame.display.flip()  # Cập nhật màn hình
+            self.clock.tick(60)  # Điều chỉnh tốc độ khung hình

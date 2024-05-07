@@ -5,7 +5,7 @@ class Pipe:
         self.screen = screen
         self.pipe_surface = pygame.transform.scale2x(pygame.image.load('assets/pipe-green.png').convert())
         self.pipe_list = []
-        self.pipe_height = [200, 300, 400]
+        self.pipe_height = [350, 300, 400, 450]
         self.spawnpipe_event = pygame.USEREVENT
         pygame.time.set_timer(self.spawnpipe_event, 1200)
         self.hit_sound = pygame.mixer.Sound('sound/sfx_hit.wav')
@@ -15,8 +15,8 @@ class Pipe:
         
     def create_pipe(self):
         random_pipe_pos = rd.choice(self.pipe_height)
-        bottom_pipe = self.pipe_surface.get_rect(midtop=(500, random_pipe_pos))
-        top_pipe = self.pipe_surface.get_rect(midtop=(500, random_pipe_pos - 650))
+        bottom_pipe = self.pipe_surface.get_rect(midtop=(455, random_pipe_pos))
+        top_pipe = self.pipe_surface.get_rect(midtop=(455, random_pipe_pos - 750))
         return bottom_pipe, top_pipe
 
     def move_pipe(self):
