@@ -62,7 +62,7 @@ class Pipe:
         self.screen = screen
         self.pipe_surface = pygame.transform.scale2x(pygame.image.load('assets/pipe-green.png').convert())
         self.pipe_list = []
-        self.pipe_height = [350, 300, 400, 450]
+        self.pipe_height = [300, 400, 350]
         self.spawnpipe_event = pygame.USEREVENT
         pygame.time.set_timer(self.spawnpipe_event, 1200)
         self.hit_sound = pygame.mixer.Sound('sound/sfx_hit.wav')
@@ -359,10 +359,10 @@ class Game:
                     bottom_pipe_center = top_pipe_center + 650  # Vị trí của cột dưới
 
                 # Tính vị trí trung tâm giữa cột trên và cột dưới
-                pipe_gap_center = (bottom_pipe_center + top_pipe_center - 200) / 2
+                pipe_gap_center = (bottom_pipe_center + top_pipe_center - 250) / 2
 
                 # Khoảng cách an toàn
-                gap_margin = 80  # Tăng khoảng cách an toàn để tránh va chạm
+                gap_margin = 85  # Tăng khoảng cách an toàn để tránh va chạm
 
                 # Giới hạn dưới và trên để chim bay
                 min_y = pipe_gap_center - gap_margin

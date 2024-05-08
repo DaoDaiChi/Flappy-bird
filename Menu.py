@@ -3,6 +3,11 @@ import sys
 
 class Menu:
     def __init__(self, screen):
+        """
+        Khởi tạo Menu với màn hình Pygame và danh sách các tùy chọn.
+
+        :param screen: Màn hình Pygame để hiển thị các tùy chọn menu.
+        """
         self.screen = screen
         self.BG = pygame.transform.scale2x(pygame.image.load(r'assets/background-night.png').convert())
         self.WHITE = (255, 255, 255)
@@ -27,6 +32,11 @@ class Menu:
         self.screen.blit(text_surface, text_rect)
 
     def choose_bird_skin(self, BLACK = (0,0,0)):
+        """
+        Hiển thị menu chọn skin của chim và trả về chỉ số của skin được chọn.
+
+        :return: Chỉ số của skin chim được chọn.
+        """
         selected_skin_index = 0  # Default selected skin index
         skins = [
             pygame.transform.scale2x(pygame.image.load("assets/yellowbird-downflap.png").convert_alpha()),
@@ -91,6 +101,9 @@ class Menu:
                     if ok_button_rect.collidepoint(mouse_pos):
                         return selected_skin_index  # Return the selected skin index when OK is clicked
     def run(self):
+        """
+        Chạy vòng lặp chính của menu, hiển thị các tùy chọn và xử lý sự kiện.
+        """
         while True:
             self.screen.blit(self.BG, (0, 0))
             for event in pygame.event.get():
@@ -121,29 +134,3 @@ class Menu:
 
             pygame.display.flip()
             self.clock.tick(60)
-class StartScreen:
-    def __init__(self, screen):
-        self.screen = screen
-        self.bg = pygame.transform.scale2x(pygame.image.load("assets/background-night.png").convert())
-        # Nút "Start Game"
-        self.start_button_image = pygame.transform.scale2x(pygame.image.load("assets/start_game_button.png").convert_alpha())
-        self.start_button_rect = self.start_button_image.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2))
-        self.clock = pygame.time.Clock()  # Dùng để kiểm soát tốc độ khung hình
-        
-    def run(self):
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.start_button_rect.collidepoint(event.pos):
-                        return  # Thoát khỏi vòng lặp để chuyển đến menu
-            
-            # Hiển thị giao diện khởi động và nút "Start Game"
-            self.screen.blit(self.bg, (0, 0))  # Vẽ nền
-            self.screen.blit(self.start_button_image, self.start_button_rect)  # Vẽ nút "Start Game"
-            
-            pygame.display.flip()  # Cập nhật màn hình
-            self.clock.tick(60)  # Điều chỉnh tốc độ khung hình

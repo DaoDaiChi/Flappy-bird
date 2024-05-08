@@ -7,6 +7,12 @@ import time
 
 class Game:
     def __init__(self, screen,level_number):
+        """
+        Khởi tạo trò chơi với màn hình và cấp độ ban đầu.
+
+        :param screen: Màn hình pygame để hiển thị đồ họa.
+        :param level_number: Cấp độ của trò chơi, dùng để điều chỉnh trọng lực.
+        """
         self.screen = screen
         self.clock = pygame.time.Clock()
         self.game_active = True
@@ -66,6 +72,9 @@ class Game:
         self.start_time = time.time()
 
     def reset_game(self):
+        """
+        Đặt lại trạng thái trò chơi về trạng thái ban đầu.
+        """
         self.game_active = True
         self.pipe.pipe_list.clear()
         self.bird.bird_rect.center = (100, 384)
@@ -75,13 +84,22 @@ class Game:
         self.start_time = time.time()
 
     def update_high_score(self):
+        """
+        Cập nhật điểm cao nhất (high score) nếu điểm hiện tại cao hơn.
+        """
         if self.score > self.high_score:
             self.high_score = self.score
 
     def play_collision_sound(self):
+        """
+        Phát âm thanh va chạm khi chim chạm vào cột hoặc sàn.
+        """
         self.hit_sound.play()
     
     def play_score_sound(self):
+        """
+        Phát âm thanh ghi điểm khi chim vượt qua một cột.
+        """
         self.score_sound.play()
 
     def score_display(self, game_active):
@@ -96,6 +114,11 @@ class Game:
             self.screen.blit(high_score_surface, high_score_rect)
 
     def check_collision(self):
+        """
+        Kiểm tra xem chim có va chạm với cột hoặc sàn không.
+
+        :return: True nếu có va chạm, False nếu không.
+        """
         for pipe in self.pipe.pipe_list:
             if self.bird.bird_rect.colliderect(pipe):
                 return True
@@ -106,11 +129,17 @@ class Game:
         return False
 
     def set_auto_play(self, enable):
-        """Enable or disable auto-play mode."""
+        """
+        Bật hoặc tắt chế độ tự động chơi.
+
+        True để bật tự động chơi, False để tắt.
+        """
         self.auto_play_mode = enable
     
     def auto_play(self):
-        """Logic tự động chơi game."""
+        """
+        =Điều khiển chim tự động vượt qua các cột.
+        """
         if self.pipe.pipe_list:
             # Tìm cột gần nhất
             closest_pipe = min(
@@ -129,10 +158,10 @@ class Game:
                     bottom_pipe_center = top_pipe_center + 650  # Vị trí của cột dưới
 
                 # Tính vị trí trung tâm giữa cột trên và cột dưới
-                pipe_gap_center = (bottom_pipe_center + top_pipe_center - 200) / 2
+                pipe_gap_center = (bottom_pipe_center + top_pipe_center - 250) / 2
 
                 # Khoảng cách an toàn
-                gap_margin = 80  # Tăng khoảng cách an toàn để tránh va chạm
+                gap_margin = 85  # Tăng khoảng cách an toàn để tránh va chạm
 
                 # Giới hạn dưới và trên để chim bay
                 min_y = pipe_gap_center - gap_margin
@@ -161,6 +190,11 @@ class Game:
         self.bird.bird_rect.centery += self.bird.bird_movement  # Cập nhật vị trí của chim
     
     def run_game(self):
+        """
+        Chạy vòng lặp chính của trò chơi, xử lý sự kiện và cập nhật giao diện.
+        Vòng lặp này kiểm soát toàn bộ trò chơi, từ việc xử lý sự kiện, điều khiển chim, 
+        đến kiểm tra va chạm và vẽ lên màn hình.
+        """
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -242,30 +276,3 @@ class Game:
 
             pygame.display.update()
             self.clock.tick(60)
-            
-class StartScreen:
-    def __init__(self, screen):
-        self.screen = screen
-        self.bg = pygame.transform.scale2x(pygame.image.load("assets/background-night.png").convert())
-        # Nút "Start Game"
-        self.start_button_image = pygame.transform.scale2x(pygame.image.load("assets/start_game_button.png").convert_alpha())
-        self.start_button_rect = self.start_button_image.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2))
-        self.clock = pygame.time.Clock()  # Dùng để kiểm soát tốc độ khung hình
-        
-    def run(self):
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.start_button_rect.collidepoint(event.pos):
-                        return  # Thoát khỏi vòng lặp để chuyển đến menu
-            
-            # Hiển thị giao diện khởi động và nút "Start Game"
-            self.screen.blit(self.bg, (0, 0))  # Vẽ nền
-            self.screen.blit(self.start_button_image, self.start_button_rect)  # Vẽ nút "Start Game"
-            
-            pygame.display.flip()  # Cập nhật màn hình
-            self.clock.tick(60)  # Điều chỉnh tốc độ khung hình

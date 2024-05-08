@@ -5,7 +5,7 @@ from Pipe import *
 from Floor import *
 from Game import *
 from Menu import *
-
+from StartScreen import *
 def main():
     pygame.mixer.pre_init(frequency=44100, size=-16, channels=2, buffer=512)
     pygame.init()
